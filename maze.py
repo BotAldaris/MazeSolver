@@ -99,15 +99,14 @@ class Maze:
             for cell in col:
                 cell.visited = False
 
-    def solve_maze(self):
-        result = self.solve_maze_dfs(0,0)
-        return result
-        # if not result:
-        #     return
-        # result_reversed = list(reversed(result))
-        # for i in range(1,len(result_reversed)):
-        #     result_reversed[i].draw_move(result_reversed[i-1])
-        #     self.__animate()
+    def solve_maze(self,bfs:bool = True):
+        if bfs:
+            result = self.solve_maze_bfs()
+            if not result:
+                return
+            for i in range(len(result)-1):
+                result[i].draw_move(result[i+1])
+                self.__animate()
     
     def solve_maze_dfs(self,i:int,j:int):
         self.__animate()
@@ -134,5 +133,29 @@ class Maze:
             else:
                 cell.draw_move(self._cells[value[0]][value[1]],True)
         return []
-
-        
+    def solve_maze_bfs(self,begin_i=0,begin_j=0):
+        path = {(begin_i,begin_j):None}
+        to_visit = [(begin_i,begin_j)]
+        while to_visit:
+            cell_position = to_visit.pop()
+            cell:Cell = self._cells[cell_position[0]][cell_position[1]]
+            cell.visited = True
+            directions = cell.check_wall()
+            if cell_position[0] == 0 and cell_position[1] == 0:
+                directions.remove("top")
+            for direction in directions:
+                value = self.__break_walls(cell_position,direction)
+                next_cell = self._cells[value[0]][value[1]]
+                if value[0] == self.__num_cols-1 and value[1] == self.__num_rows-1:
+                    current = cell_position
+                    res_path = [self._cells[-1][-1]]
+                    while current:
+                        res_path.append(self._cells[current[0]][current[1]])
+                        current = path[current]
+                    return res_path
+                if not next_cell.visited:
+                    next_cell.visited = True
+                    to_visit.insert(0,value)
+                    path[value] = cell_position
+                    cell.draw_move(next_cell,True)
+                    self.__animate()
