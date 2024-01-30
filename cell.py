@@ -63,3 +63,15 @@ class Cell:
         to_cell_center = to_cell.get_center_point()
         line = Line(self_center, to_cell_center)
         self._win.draw_line(line, color)
+    
+    def check_wall(self) -> list[str]:
+        walls_broken = []
+        if not self.has_bottom_wall:
+            walls_broken.append("bottom")
+        if not self.has_top_wall:
+            walls_broken.append("top")
+        if not self.has_right_wall:
+            walls_broken.append("right")
+        if not self.has_left_wall:
+            walls_broken.append("left")
+        return walls_broken

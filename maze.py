@@ -17,6 +17,8 @@ class Maze:
         self.__create_cells()
         self.__break_entrance_and_exit()
         self.__break_walls_r(0,0)
+        self._reset_cells_visted()
+        self.solve_maze()
         print("end")
 
     def __create_cells(self):
@@ -44,7 +46,7 @@ class Maze:
         if self.__win is None:
             return
         self.__win.redraw()
-        sleep(0.01)
+        sleep(0.03)
     
     def __break_entrance_and_exit(self):
         self._cells[0][0].has_top_wall = False
@@ -62,8 +64,6 @@ class Maze:
             chosen = choice(ij)
             next_cell = self.__break_walls((i,j),chosen)
             self.__break_walls_r(next_cell[0],next_cell[1])
-
-
 
     def __check_adjacent_wall(self,col:int,row:int):
         res = []
@@ -94,3 +94,45 @@ class Maze:
         self._cells[cell[0]+1][cell[1]].has_left_wall = False
         return cell[0]+1,cell[1]
     
+    def _reset_cells_visted(self):
+        for col in self._cells:
+            for cell in col:
+                cell.visited = False
+
+    def solve_maze(self):
+        result = self.solve_maze_dfs(0,0)
+        return result
+        # if not result:
+        #     return
+        # result_reversed = list(reversed(result))
+        # for i in range(1,len(result_reversed)):
+        #     result_reversed[i].draw_move(result_reversed[i-1])
+        #     self.__animate()
+    
+    def solve_maze_dfs(self,i:int,j:int):
+        self.__animate()
+        cell:Cell = self._cells[i][j]
+        if cell.visited:
+            return []
+        
+        if i == self.__num_cols-1 and j == self.__num_rows-1:
+            return [cell]
+        cell.visited = True
+        to_visit = cell.check_wall()
+        if  i == 0 and j == 0:
+            to_visit.remove("top") 
+        for direction in to_visit:
+            value = self.__break_walls((i,j),direction)
+            if self._cells[value[0]][value[1]].visited:
+                pass
+            cell.draw_move(self._cells[value[0]][value[1]])
+            result = self.solve_maze_dfs(value[0],value[1])
+            if result:
+                result.append(cell)
+                cell.draw_move(self._cells[value[0]][value[1]])
+                return result
+            else:
+                cell.draw_move(self._cells[value[0]][value[1]],True)
+        return []
+
+        
